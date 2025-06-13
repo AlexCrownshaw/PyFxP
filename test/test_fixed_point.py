@@ -234,7 +234,39 @@ class TestFixedPoint(unittest.TestCase):
         self.assertEqual(c.val_int, 768)
         self.assertEqual(c.val_bin, "0000001100000000") 
         self.assertTrue(c.signed)
-        
+
+    def test_lshift_unsigned(self):
+        a = FixedPoint(1.5, int_width=3, fract_width=4, signed=False)   # 0011000 -> 0110000
+        b = a << 1
+        self.assertEqual(b.val_float, 3.0)
+        self.assertEqual(b.val_int, 48)
+        self.assertEqual(b.val_bin, "0110000") 
+        self.assertFalse(b.signed)
+
+    def test_lshift_signed(self):
+        a = FixedPoint(-3.5, int_width=3, fract_width=4, signed=True)   # 11001000 -> 10010000
+        print(a.val_bin)
+        b = a << 1
+        self.assertEqual(b.val_float, -7)
+        self.assertEqual(b.val_int, -112)
+        self.assertEqual(b.val_bin, "10010000") 
+        self.assertTrue(b.signed)
+
+    def test_rshift_unsigned(self):
+        a = FixedPoint(3.0, int_width=3, fract_width=4, signed=False)  # 0110000 -> 0011000
+        b = a >> 1
+        self.assertAlmostEqual(b.val_float, 1.5, places=6)
+        self.assertEqual(b.val_int, 24)
+        self.assertEqual(b.val_bin, "0011000")
+        self.assertFalse(b.signed)
+
+    def test_rshift_signed(self):
+        a = FixedPoint(-4.0, int_width=3, fract_width=4, signed=True)  # 11000000 -> 11100000 (arithmetic shift)
+        b = a >> 1
+        self.assertAlmostEqual(b.val_float, -2.0, places=6)
+        self.assertEqual(b.val_int, -32)
+        self.assertEqual(b.val_bin, "11100000")
+        self.assertTrue(b.signed)
 
 if __name__ == "__main__":
     unittest.main()

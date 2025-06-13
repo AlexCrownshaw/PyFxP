@@ -183,3 +183,42 @@ class FixedPoint:
         Registry.log_op(lhs=self, rhs=other, result=result, opp_type=OppType.__MUL__)
 
         return result
+
+    def __lshift__(self, n: int) -> "FixedPoint":
+        """
+        Logical bitwise left shift on internal integer representation.
+        Equivalent to MATLAB bitsll.
+        """
+        if not isinstance(n, int) or n < 0:
+            raise ValueError("Shift amount must be a non-negative integer")
+
+        shifted_val = self._val_int << n
+        return FixedPoint(shifted_val, self._int_width, self._fract_width, self._signed)
+
+
+    def __rshift__(self, n: int) -> "FixedPoint":
+        """
+        Logical bitwise right shift on internal integer representation.
+        Equivalent to MATLAB bitsra for signed, bitsrl for unsigned.
+        """
+        if not isinstance(n, int) or n < 0:
+            raise ValueError("Shift amount must be a non-negative integer")
+
+        if self._signed:
+            # Arithmetic right shift (preserve sign)
+            shifted_val = self._val_int >> n
+        else:
+            # Logical right shift (insert zeros from the left)
+            shifted_val = (self._val_int & ((1 << self._total_width) - 1)) >> n
+
+        return FixedPoint(shifted_val, self._int_width, self._fract_width, self._signed)
+    
+    def bsl_scale(self, n: int) -> "FixedPoint":
+        """ Bitwise scale left (value *= 2ⁿ) without changing format """
+        shifted_val = self.val_float * (2 ** n)
+        return FixedPoint(shifted_val, self._int_width, self._fract_width, self._signed)
+
+    def bsr_scale(self, n: int) -> "FixedPoint":
+        """ Bitwise scale right (value /= 2ⁿ) without changing format """
+        shifted_val = self.val_float / (2 ** n)
+        return FixedPoint(shifted_val, self._int_width, self._fract_width, self._signed)
